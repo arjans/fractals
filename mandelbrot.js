@@ -1,50 +1,61 @@
-var canvas, ctx;
+var canvas, ctx, ihex = [], ihash = {};
+var MAX_ITERATIONS = 50;
 function init() {
     canvas = document.getElementById('thing');
     // canvas.width = window.innerWidth;
     // canvas.height = window.innerHeight;
     canvas.width = canvas.height = 500;
 
+    cacheHexColors();
+
     ctx = canvas.getContext('2d');
+    var image = ctx.createImageData(canvas.width, canvas.height);
+
+    console.time("MANDELBROT");
     for (var y = 0; y < canvas.height; y++) {
         for (var x = 0; x < canvas.width; x++) {
-            mandelbrot([x / canvas.width, y / canvas.height]);
+            mandelbrot(x / canvas.width, y / canvas.height, image);
         }
     }
+    // render pixels
+    ctx.putImageData(image, 0, 0);
+    console.timeEnd("MANDELBROT");
 }
 
-function mandelbrot(c) {
+function mandelbrot(c1, c2, image) {
     // if iteration > 2, color as white
     var x, y, x2, y2;
-    var a = 2 * c[0] - 1.5;
-    var b = 2 * c[1] - 1;
+    var a = 2 * c1 - 1.5;
+    var b = 2 * c2 - 1;
+    var hex = [0, 0, 0];
+    
 
-    x = c[0];
-    y = c[1];
+    x = c1;
+    y = c2;
 
     x2 = y2 = 0;
 
     x *= canvas.width;
     y *= canvas.height;
 
-    for (var i = 0; i < 50; i++) {
+    for (var i = 0; i < MAX_ITERATIONS; i++) {
 	var xTemp = x2 * x2 - y2 * y2 + a;
         var yTemp = 2 * x2 * y2 + b;
         x2 = xTemp;
         y2 = yTemp;
         if (x2 * x2 + y2 * y2 > 4) {
-	    var hex = itorgb(i);
-            ctx.fillStyle = hex;
-            ctx.fillRect(x, y, 1, 1);
-            return;
+            hex = ihex[i];
+            break;
         }
     }
-    ctx.fillStyle = 'black';
-    ctx.fillRect(x, y, 1, 1);
+    image.data[(x + y * canvas.width) * 4] = hex[0];
+    image.data[(x + y * canvas.width) * 4 + 1] = hex[1];
+    image.data[(x + y * canvas.width) * 4 + 2] = hex[2];
+    image.data[(x + y * canvas.width) * 4 + 3] = 255;
 }
 
 function itorgb (i) {
-    var h = i / 50 * 360;
+    var h = i / MAX_ITERATIONS * 360;
     var hprime = h / 60;
     var x = 1 - Math.abs(hprime % 2 - 1);
     var r = 0;
@@ -91,19 +102,11 @@ function itorgb (i) {
     g = Math.floor(g * 255);
     b = Math.floor(b * 255);
     
-    r = r.toString(16);
-    g = g.toString(16);
-    b = b.toString(16);
+    return [r, g, b];
+}
 
-    if (r.length === 1) {
-	r = "0" + r;
+function cacheHexColors() {
+    for (var i = 0; i < MAX_ITERATIONS; i++) {
+        ihex.push(itorgb(i));
     }
-    if (g.length === 1) {
-	g = "0" + g;
-    }
-    if (b.length === 1) {
-	b = "0" + b;
-    }
-
-    return "#" + r + g + b;
 }
