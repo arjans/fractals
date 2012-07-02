@@ -24,18 +24,83 @@ function julia(z, c) {
     x *= canvas.width;
     y *= canvas.height;
 
-    for (var i = 0; i < 20; i++) {
+    for (var i = 0; i < 50; i++) {
 	var xTemp = x2 * x2 - y2 * y2 + a;
         var yTemp = 2 * x2 * y2 + b;
         x2 = xTemp;
         y2 = yTemp;
-        if (Math.sqrt(x2 * x2 + y2 *y2) > 2) {
-            console.log(x2, y2, i);
-	    ctx.fillStyle = 'white';
+        if (x2 * x2 + y2 * y2 > 4) {
+	    var hex = itorgb(i);
+            ctx.fillStyle = hex;
             ctx.fillRect(x, y, 1, 1);
             return;
         }
     }
     ctx.fillStyle = 'black';
     ctx.fillRect(x, y, 1, 1);
+}
+
+function itorgb (i) {
+    var h = i / 50 * 360;
+    var hprime = h / 60;
+    var x = 1 - Math.abs(hprime % 2 - 1);
+    var r = 0;
+    var g = 0;
+    var b = 0;
+
+    if (0 <= hprime && hprime < 1) {
+	r = 1;
+	g = x;
+	b = 0;
+    }
+
+    else if (1 <= hprime && hprime < 2) {
+	r = x;
+	g = 1;
+	b = 0;
+    }
+
+    else if (2 <= hprime && hprime < 3) {
+	r = 0;
+	g = 1;
+	b = x;
+    }
+
+    else if (3 <= hprime && hprime < 4) {
+	r = 0;
+	g = x;
+	b = 1;
+    }
+
+    else if (4 <= hprime && hprime < 5) {
+	r = x;
+	g = 0;
+	b = 1;
+    }
+
+    else if (5 <= hprime && hprime < 6) {
+	r = 1;
+	g = 0;
+	b = x;
+    }
+
+    r = Math.floor(r * 255);
+    g = Math.floor(g * 255);
+    b = Math.floor(b * 255);
+    
+    r = r.toString(16);
+    g = g.toString(16);
+    b = b.toString(16);
+
+    if (r.length === 1) {
+	r = "0" + r;
+    }
+    if (g.length === 1) {
+	g = "0" + g;
+    }
+    if (b.length === 1) {
+	b = "0" + b;
+    }
+
+    return "#" + r + g + b;
 }
