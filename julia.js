@@ -1,14 +1,23 @@
-var canvas, ctx;
+var canvas, ctx, aInput, bInput;
 function init() {
     canvas = document.getElementById('thing');
+    aInput = document.getElementById('a');
+    bInput = document.getElementById('b');
     // canvas.width = window.innerWidth;
     // canvas.height = window.innerHeight;
     canvas.width = canvas.height = 500;
 
     ctx = canvas.getContext('2d');
+    renderJulia(-0.513, -0.579);
+
+    aInput.addEventListener('keyup', handleKeys, false);
+    bInput.addEventListener('keyup', handleKeys, false);
+}
+
+function renderJulia(a, b) {
     for (var y = 0; y < canvas.height; y++) {
         for (var x = 0; x < canvas.width; x++) {
-            julia([x / canvas.width, y / canvas.height], [-0.513, -0.579]);
+            julia([x / canvas.width, y / canvas.height], [a, b]);
         }
     }
 }
@@ -40,6 +49,11 @@ function julia(z, c) {
     ctx.fillRect(x, y, 1, 1);
 }
 
+function handleKeys(e) {
+    if (e.which == 13) {
+        renderJulia(parseFloat(aInput.value), parseFloat(bInput.value));
+    }
+}
 function itorgb (i) {
     var h = i / 50 * 360;
     var hprime = h / 60;
