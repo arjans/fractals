@@ -6,23 +6,25 @@ function init() {
     // canvas.width = window.innerWidth;
     // canvas.height = window.innerHeight;
     canvas.width = canvas.height = 500;
-
     ctx = canvas.getContext('2d');
-    renderJulia(-0.513, -0.579);
 
-    aInput.addEventListener('keyup', handleKeys, false);
-    bInput.addEventListener('keyup', handleKeys, false);
+    renderJulia(-0.513, -0.579);
+    aInput.addEventListener('keydown', handleKeys, false);
+    bInput.addEventListener('keydown', handleKeys, false);
 }
 
 function renderJulia(a, b) {
+    var image = ctx.createImageData(canvas.width, canvas.height);
+
     for (var y = 0; y < canvas.height; y++) {
         for (var x = 0; x < canvas.width; x++) {
-            julia([x / canvas.width, y / canvas.height], [a, b]);
+            julia([x / canvas.width, y / canvas.height], [a, b], image);
         }
     }
+    ctx.putImageData(image, 0, 0);
 }
 
-function julia(z, c) {
+function julia(z, c, image) {
     // if iteration > 2, color as white
     var x, y, x2, y2;
     var a = c[0];
@@ -33,29 +35,36 @@ function julia(z, c) {
     x *= canvas.width;
     y *= canvas.height;
 
+    var rgb = [0, 0, 0];
+
     for (var i = 0; i < 50; i++) {
 	var xTemp = x2 * x2 - y2 * y2 + a;
         var yTemp = 2 * x2 * y2 + b;
         x2 = xTemp;
         y2 = yTemp;
-        if (x2 * x2 + y2 * y2 > 4) {
-	    var hex = itorgb(i);
-            ctx.fillStyle = hex;
-            ctx.fillRect(x, y, 1, 1);
-            return;
+	var square = x2 * x2 + y2 * y2;
+        if (square > 4) {
+	    rgb = itorgb(i, square);
+            break;
         }
     }
-    ctx.fillStyle = 'black';
-    ctx.fillRect(x, y, 1, 1);
+    image.data[(x + y * canvas.width) * 4 + 0] = rgb[0];
+    image.data[(x + y * canvas.width) * 4 + 1] = rgb[1];
+    image.data[(x + y * canvas.width) * 4 + 2] = rgb[2];
+    image.data[(x + y * canvas.width) * 4 + 3] = 255;
 }
 
 function handleKeys(e) {
+    console.log(e);
     if (e.which == 13) {
         renderJulia(parseFloat(aInput.value), parseFloat(bInput.value));
     }
 }
-function itorgb (i) {
-    var h = i / 50 * 360;
+
+function itorgb (i, z) {
+    var h = i + Math.log(Math.log(4)) / Math.log(2) - Math.log(Math.log(z)) / Math.log(2);
+    h = h / 50 * 360;
+    if (h < 0) h = 0;
     var hprime = h / 60;
     var x = 1 - Math.abs(hprime % 2 - 1);
     var r = 0;
@@ -102,19 +111,5 @@ function itorgb (i) {
     g = Math.floor(g * 255);
     b = Math.floor(b * 255);
     
-    r = r.toString(16);
-    g = g.toString(16);
-    b = b.toString(16);
-
-    if (r.length === 1) {
-	r = "0" + r;
-    }
-    if (g.length === 1) {
-	g = "0" + g;
-    }
-    if (b.length === 1) {
-	b = "0" + b;
-    }
-
-    return "#" + r + g + b;
+    return [r, g, b];
 }
