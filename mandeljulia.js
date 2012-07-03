@@ -1,5 +1,6 @@
 var canvas, juliaCanvas, ctx, juliaCtx, ihex = [], ihash = {};
 var MAX_ITERATIONS = 50;
+var BACKGROUND_COLOR = [32, 32, 32];
 function init() {
     canvas = document.getElementById('thing');
     juliaCanvas = document.getElementById('julia');
@@ -21,14 +22,14 @@ function init() {
     ctx.putImageData(image, 0, 0);
     console.timeEnd("MANDELBROT");
     
-    canvas.addEventListener('mouseup', clickMandelbrot, false);
+    canvas.addEventListener('mousedown', clickMandelbrot, false);
 }
 
 function mandelbrot(x, y, c1, c2, image) {
     var x2, y2;
     var a = 2 * c1 - 1.5;
     var b = 2 * c2 - 1;
-    var hex = [0, 0, 0];
+    var hex = BACKGROUND_COLOR;
     
     x2 = y2 = 0;
 
@@ -61,6 +62,8 @@ function clickMandelbrot(e) {
     var image = juliaCtx.createImageData(juliaCanvas.width, juliaCanvas.height);
     clickX *= scale / canvas.width;
     clickY *= scale / canvas.height;
+    console.log(clickX, clickY);
+    console.log(clickX * 2 -1, clickY*2-1);
     for (var y = 0; y < juliaCanvas.height; y++) {
         for (var x = 0; x < juliaCanvas.width; x++) {
             julia(x, y, [x / canvasScale, y / canvasScale], [clickX, clickY], image);
@@ -74,6 +77,7 @@ function itorgb (i, absz) {
     if (absz) {
         h += Math.log(Math.log(4)) / Math.log(2) - Math.log(Math.log(absz)) / Math.log(2);
     }
+    if (h < 0) h = 0;
     h = h / MAX_ITERATIONS * 360;
     var hprime = h / 60;
     var x = 1 - Math.abs(hprime % 2 - 1);
@@ -85,33 +89,23 @@ function itorgb (i, absz) {
 	r = 1;
 	g = x;
 	b = 0;
-    }
-
-    else if (1 <= hprime && hprime < 2) {
+    } else if (1 <= hprime && hprime < 2) {
 	r = x;
 	g = 1;
 	b = 0;
-    }
-
-    else if (2 <= hprime && hprime < 3) {
+    } else if (2 <= hprime && hprime < 3) {
 	r = 0;
 	g = 1;
 	b = x;
-    }
-
-    else if (3 <= hprime && hprime < 4) {
+    } else if (3 <= hprime && hprime < 4) {
 	r = 0;
 	g = x;
 	b = 1;
-    }
-
-    else if (4 <= hprime && hprime < 5) {
+    } else if (4 <= hprime && hprime < 5) {
 	r = x;
 	g = 0;
 	b = 1;
-    }
-
-    else if (5 <= hprime && hprime < 6) {
+    } else if (5 <= hprime && hprime < 6) {
 	r = 1;
 	g = 0;
 	b = x;
@@ -126,9 +120,9 @@ function itorgb (i, absz) {
 
 function julia(x, y, z, c, image) {
     var x2, y2;
-    var a = c[0];
-    var b = c[1];
-    var hex = [0, 0, 0];
+    var a = 2 * c[0] - 1.5;
+    var b = 2 * c[1] - 1;
+    var hex = BACKGROUND_COLOR;
 
     x2 = z[0];
     y2 = z[1];
