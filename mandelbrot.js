@@ -2,19 +2,19 @@ var canvas, ctx, ihex = [], ihash = {};
 var MAX_ITERATIONS = 50;
 function init() {
     canvas = document.getElementById('thing');
-    // canvas.width = window.innerWidth;
-    // canvas.height = window.innerHeight;
-    canvas.width = canvas.height = 500;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     cacheHexColors();
 
     ctx = canvas.getContext('2d');
     var image = ctx.createImageData(canvas.width, canvas.height);
+    var scale = Math.min(canvas.width, canvas.height);
 
     console.time("MANDELBROT");
     for (var y = 0; y < canvas.height; y++) {
         for (var x = 0; x < canvas.width; x++) {
-            mandelbrot(x / canvas.width, y / canvas.height, image);
+            mandelbrot(x, y, x / scale, y / scale, image);
         }
     }
     // render pixels
@@ -22,30 +22,23 @@ function init() {
     console.timeEnd("MANDELBROT");
 }
 
-function mandelbrot(c1, c2, image) {
-    // if iteration > 2, color as white
-    var x, y, x2, y2;
+function mandelbrot(x, y, c1, c2, image) {
+    var x2, y2;
     var a = 2 * c1 - 1.5;
     var b = 2 * c2 - 1;
     var hex = [0, 0, 0];
     
-
-    x = c1;
-    y = c2;
-
     x2 = y2 = 0;
-
-    x *= canvas.width;
-    y *= canvas.height;
 
     for (var i = 0; i < MAX_ITERATIONS; i++) {
 	var xTemp = x2 * x2 - y2 * y2 + a;
         var yTemp = 2 * x2 * y2 + b;
         x2 = xTemp;
         y2 = yTemp;
-        if (x2 * x2 + y2 * y2 > 4) {
-            hex = ihex[i];
-            break;
+	var absz = x2 * x2 + y2 * y2;
+        if (absz > 4) {
+            hex = itorgb(i, absz);
+	    break;
         }
     }
     image.data[(x + y * canvas.width) * 4] = hex[0];
@@ -54,8 +47,9 @@ function mandelbrot(c1, c2, image) {
     image.data[(x + y * canvas.width) * 4 + 3] = 255;
 }
 
-function itorgb (i) {
-    var h = i / MAX_ITERATIONS * 360;
+function itorgb (i, absz) {
+    var h = i + Math.log(Math.log(4)) / Math.log(2) - Math.log(Math.log(absz)) / Math.log(2);
+    h = h / MAX_ITERATIONS * 360;
     var hprime = h / 60;
     var x = 1 - Math.abs(hprime % 2 - 1);
     var r = 0;
